@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Boxes, Container, Database, Layers, Network, Server, ShieldCheck } from "lucide-react";
 import { CodeBlock } from "@/components/code-block";
 import { Tabs } from "@/components/tabs";
-import { VersionBadge } from "@/components/version-badge";
 import {
   AGENT_DOCKER_HOST,
   AGENT_K8S,
@@ -89,25 +88,53 @@ function SectionTitle({ id, icon: Icon, title, subtitle }: { id: string; icon: t
 }
 
 const METHODS = [
-  { href: "#docker", icon: Container, title: "Docker Compose", body: "Recommended. Pulls the published images -- one compose file, running in minutes.", tag: "Recommended" },
+  { href: "#docker", icon: Container, title: "Docker Compose", body: "Recommended. Pulls the published images — one compose file, running in minutes.", tag: "Recommended" },
   { href: "#kubernetes", icon: Network, title: "Kubernetes", body: "PostgreSQL, API, console and gateway as Kubernetes workloads from the same images.", tag: "Clusters" },
-  { href: "#containers", icon: Layers, title: "Individual containers", body: "Run the API, console and gateway images yourself -- any orchestrator, your own or a managed PostgreSQL.", tag: "Production" },
+  { href: "#containers", icon: Layers, title: "Individual containers", body: "Run the API, console and gateway images yourself — any orchestrator, your own or a managed PostgreSQL.", tag: "Production" },
   { href: "#host", icon: Server, title: "Linux host (systemd)", body: "Native install without Docker: apt, dnf or yum, managed by systemd behind nginx.", tag: "Bare metal / VM" },
   { href: "#agents", icon: Boxes, title: "Agents", body: "Connect Docker hosts, VMs (Docker or native) and Kubernetes clusters to your platform.", tag: "Monitored hosts" },
 ];
 
 export default function InstallPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <VersionBadge />
-      <h1 className="mt-4 text-4xl font-semibold tracking-tight">Install {PRODUCT_NAME}</h1>
-      <p className="mt-4 max-w-3xl text-lg text-slate-500">
-        Self-host v{PRODUCT_VERSION} in containers or directly on a Linux server, then connect the machines and clusters you want to monitor.
-      </p>
+    <div>
+      <section className="hero-bg text-white">
+        <div className="page-container py-14 sm:py-16">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-sky-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> v{PRODUCT_VERSION} · Stable
+          </span>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
+            Install <span className="text-gradient">{PRODUCT_NAME}</span>
+          </h1>
+          <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-300">
+            Self-host v{PRODUCT_VERSION} with Docker Compose, Kubernetes, individual containers or directly on a Linux server — with the built-in
+            or your own managed PostgreSQL — then connect the machines and clusters you want to monitor.
+          </p>
+        </div>
+      </section>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="page-container grid gap-10 py-12 lg:grid-cols-[220px_minmax(0,1fr)] xl:gap-16">
+        <aside className="sticky top-24 hidden h-fit lg:block">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">On this page</div>
+          <nav className="mt-3 flex flex-col gap-1 text-sm">
+            {[
+              ["#docker", "Docker Compose"],
+              ["#kubernetes", "Kubernetes"],
+              ["#containers", "Individual containers"],
+              ["#host", "Linux host (systemd)"],
+              ["#agents", "Agents"],
+            ].map(([href, label]) => (
+              <a key={href} href={href} className="rounded-md px-2 py-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white">
+                {label}
+              </a>
+            ))}
+          </nav>
+        </aside>
+        <div className="min-w-0">
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
         {METHODS.map((m) => (
-          <a key={m.href} href={m.href} className="group rounded-2xl border border-slate-200 p-5 transition-colors hover:border-sky-400 dark:border-slate-800 dark:hover:border-sky-700">
+          <a key={m.href} href={m.href} className="card-lift group rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/40">
             <div className="flex items-center justify-between">
               <m.icon className="h-6 w-6 text-sky-600 dark:text-sky-400" />
               <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800">{m.tag}</span>
@@ -157,7 +184,7 @@ export default function InstallPage() {
 
       {/* ---------------- Docker ---------------- */}
       <section className="mt-16">
-        <SectionTitle id="docker" icon={Container} title="Method 1 · Docker Compose" subtitle="Pulls the published images from Docker Hub -- nothing is built on your server." />
+        <SectionTitle id="docker" icon={Container} title="Method 1 · Docker Compose" subtitle="Pulls the published images from Docker Hub — nothing is built on your server." />
         <ol className="mt-8 space-y-10">
           <Step n={1} title="Install Docker Engine and the Compose plugin" body="Pick your distribution. Uses Docker's official repositories.">
             <div className="mt-4">
@@ -200,7 +227,7 @@ export default function InstallPage() {
           id="containers"
           icon={Layers}
           title="Method 3 · Individual containers"
-          subtitle="Each service is its own image -- deploy them on ECS, Nomad, Swarm or plain Docker, and point the API at the PostgreSQL you already run."
+          subtitle="Each service is its own image — deploy them on ECS, Nomad, Swarm or plain Docker, and point the API at the PostgreSQL you already run."
         />
         <div className="mt-8 space-y-8">
           {COMPONENTS.map((c) => (
@@ -271,7 +298,7 @@ export default function InstallPage() {
           id="agents"
           icon={Boxes}
           title="Connect your infrastructure (agents)"
-          subtitle="Each agent dials out to your platform over a WebSocket with a per-resource token. The console generates the exact command -- the ones below show its shape."
+          subtitle="Each agent dials out to your platform over a WebSocket with a per-resource token. The console generates the exact command — the ones below show its shape."
         />
         <div className="mt-8">
           <Tabs
@@ -282,7 +309,7 @@ export default function InstallPage() {
                 label: "Docker host",
                 content: (
                   <>
-                    <p className="text-sm text-slate-500">Any machine running Docker. Needs only the Docker socket -- no SSH.</p>
+                    <p className="text-sm text-slate-500">Any machine running Docker. Needs only the Docker socket — no SSH.</p>
                     <CodeBlock code={AGENT_DOCKER_HOST} />
                   </>
                 ),
@@ -332,11 +359,13 @@ export default function InstallPage() {
         <div>
           <div className="font-semibold text-emerald-900 dark:text-emerald-200">Production checklist</div>
           <ul className="mt-2 space-y-1 text-emerald-900/80 dark:text-emerald-200/80">
-            <li>• Keep .env, the Kubernetes secret and INFRAHUB_MASTER_KEY private -- never commit them or bake them into an image.</li>
+            <li>• Keep .env, the Kubernetes secret and INFRAHUB_MASTER_KEY private — never commit them or bake them into an image.</li>
             <li>• Serve over HTTPS (certbot --nginx, or your load balancer) so session cookies stay secure.</li>
             <li>• Back up the PostgreSQL database daily (pg_dump), and keep a copy of the master key with it.</li>
             <li>• Restrict port 5432 to localhost / the compose network.</li>
           </ul>
+        </div>
+      </div>
         </div>
       </div>
     </div>

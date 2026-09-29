@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2">
+    <div className="page-container grid gap-12 py-16 lg:grid-cols-2 lg:gap-20">
       <div>
         <div className="text-sm font-semibold text-sky-600 dark:text-sky-400">Contact sales</div>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight">Let&apos;s size {PRODUCT_NAME} for your fleet</h1>

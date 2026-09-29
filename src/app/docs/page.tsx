@@ -49,7 +49,7 @@ function C({ children }: { children: React.ReactNode }) {
 
 export default function DocsPage() {
   return (
-    <div className="mx-auto flex max-w-7xl gap-10 px-4 py-12 sm:px-6">
+    <div className="page-container flex gap-10 py-12 lg:gap-16">
       <aside className="sticky top-24 hidden h-fit w-56 shrink-0 lg:block">
         <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">On this page</div>
         <nav className="mt-3 flex flex-col gap-1 text-sm">
@@ -61,7 +61,7 @@ export default function DocsPage() {
         </nav>
       </aside>
 
-      <article className="min-w-0 max-w-3xl flex-1">
+      <article className="min-w-0 max-w-4xl flex-1">
         <VersionBadge />
         <h1 className="mt-4 text-4xl font-semibold tracking-tight">{PRODUCT_NAME} documentation</h1>
         <p className="mt-4 text-lg text-slate-500">
@@ -72,13 +72,13 @@ export default function DocsPage() {
         <P>
           {PRODUCT_NAME} is a self-hosted infrastructure monitoring and operations platform. It manages Virtual Machines (SSH discovery,
           OS/kernel, packages, controlled reboot), Docker (containers, images, metrics, logs), Kubernetes (nodes, pods, logs), standalone
-          databases and S3-compatible object storage -- all under a Workspace → resource authorization model with an append-only audit log.
+          databases and S3-compatible object storage — all under a Workspace → resource authorization model with an append-only audit log.
         </P>
 
         <H2 id="quick-start">Quick start</H2>
         <P>
-          This is the local development setup. For production -- Docker Compose, or a native install on Ubuntu/Debian (apt), RHEL/Rocky/Alma
-          (dnf) and more -- see the{" "}
+          This is the local development setup. For production — Docker Compose, or a native install on Ubuntu/Debian (apt), RHEL/Rocky/Alma
+          (dnf) and more — see the{" "}
           <a href="/install" className="text-sky-600 underline">
             installation guide
           </a>
@@ -105,7 +105,7 @@ npm run dev                         # http://localhost:3000`}</Code>
         <Code>{`curl http://localhost:8080/api/health
 # {"status":"ok","database":"ok"}`}</Code>
         <P>
-          For production, run the published images from docker.io/infrahubcenter with Docker Compose or Kubernetes -- no build needed. See the{" "}
+          For production, run the published images from docker.io/infrahubcenter with Docker Compose or Kubernetes — no build needed. See the{" "}
           <a href="/install" className="text-sky-600 underline">
             installation guide
           </a>
@@ -115,17 +115,17 @@ npm run dev                         # http://localhost:3000`}</Code>
         <H2 id="architecture">Architecture</H2>
         <Ul>
           <li>
-            <strong>Console</strong> (<C>infrahub-ui</C>) -- Next.js web app. Every screen is UX only; the API authorizes every request.
+            <strong>Console</strong> (<C>infrahub-ui</C>) — Next.js web app. Every screen is UX only; the API authorizes every request.
           </li>
           <li>
-            <strong>API</strong> (<C>infrahub-api</C>) -- Go service: REST + WebSocket endpoints, schedulers for monitoring, alert
+            <strong>API</strong> (<C>infrahub-api</C>) — Go service: REST + WebSocket endpoints, schedulers for monitoring, alert
             evaluation and retention cleanup.
           </li>
           <li>
-            <strong>PostgreSQL</strong> -- inventory, metrics history, alerts, audit log. Migrations run with <C>cmd/migrate</C>.
+            <strong>PostgreSQL</strong> — inventory, metrics history, alerts, audit log. Migrations run with <C>cmd/migrate</C>.
           </li>
           <li>
-            <strong>Agents</strong> (<C>infrahub-docker-agent</C>, <C>infrahub-k8s-agent</C>, <C>infrahub-vm-agent</C>) -- small Go programs on the monitored machines that connect <em>out</em> to the API.
+            <strong>Agents</strong> (<C>infrahub-docker-agent</C>, <C>infrahub-k8s-agent</C>, <C>infrahub-vm-agent</C>) — small Go programs on the monitored machines that connect <em>out</em> to the API.
           </li>
         </Ul>
         <P>
@@ -169,7 +169,7 @@ npm run dev                         # http://localhost:3000`}</Code>
           monitored host.
         </P>
         <P>
-          VMs without Docker can run the VM Agent natively as a systemd service on apt, dnf, yum and zypper based distributions -- see{" "}
+          VMs without Docker can run the VM Agent natively as a systemd service on apt, dnf, yum and zypper based distributions — see{" "}
           <a href="/install#agents" className="text-sky-600 underline">
             Installation → Agents
           </a>
@@ -179,24 +179,24 @@ npm run dev                         # http://localhost:3000`}</Code>
         <H2 id="modules">Modules</H2>
         <P>The console sidebar is organized by capability:</P>
         <Ul>
-          <li><strong>Operations Overview</strong> -- fleet-wide health at a glance.</li>
-          <li><strong>Workspaces</strong> -- the access boundary every resource belongs to.</li>
-          <li><strong>Compute</strong> -- Compute Inventory (VMs, web SSH console), Patch Management (update plans, controlled reboots), Host Metrics &amp; Logs.</li>
-          <li><strong>Database Observability</strong> -- PostgreSQL, MySQL, MariaDB, MongoDB, Redis and Valkey health, performance, browser and logs.</li>
-          <li><strong>Object Storage (S3)</strong> -- bucket health, security posture, growth projection and object browser.</li>
-          <li><strong>Agents &amp; Integrations</strong> -- onboard Docker hosts and Kubernetes clusters.</li>
-          <li><strong>Infrastructure Monitoring</strong> -- Docker and Kubernetes dashboards, organized in folders.</li>
-          <li><strong>Log Management</strong> -- Docker and Kubernetes Log Explorer with live tailing.</li>
-          <li><strong>Alerting &amp; Incidents</strong> -- rules, active alerts, acknowledgement and suppression.</li>
-          <li><strong>Identity &amp; Users</strong>, <strong>Access Control (RBAC)</strong>, <strong>Audit Trail</strong> -- administration.</li>
-          <li><strong>Plans &amp; Billing</strong> -- current plan, usage against limits, upgrades.</li>
+          <li><strong>Operations Overview</strong> — fleet-wide health at a glance.</li>
+          <li><strong>Workspaces</strong> — the access boundary every resource belongs to.</li>
+          <li><strong>Compute</strong> — Compute Inventory (VMs, web SSH console), Patch Management (update plans, controlled reboots), Host Metrics &amp; Logs.</li>
+          <li><strong>Database Observability</strong> — PostgreSQL, MySQL, MariaDB, MongoDB, Redis and Valkey health, performance, browser and logs.</li>
+          <li><strong>Object Storage (S3)</strong> — bucket health, security posture, growth projection and object browser.</li>
+          <li><strong>Agents &amp; Integrations</strong> — onboard Docker hosts and Kubernetes clusters.</li>
+          <li><strong>Infrastructure Monitoring</strong> — Docker and Kubernetes dashboards, organized in folders.</li>
+          <li><strong>Log Management</strong> — Docker and Kubernetes Log Explorer with live tailing.</li>
+          <li><strong>Alerting &amp; Incidents</strong> — rules, active alerts, acknowledgement and suppression.</li>
+          <li><strong>Identity &amp; Users</strong>, <strong>Access Control (RBAC)</strong>, <strong>Audit Trail</strong> — administration.</li>
+          <li><strong>Plans &amp; Billing</strong> — current plan, usage against limits, upgrades.</li>
         </Ul>
 
         <H2 id="rbac">Roles &amp; access control</H2>
         <Ul>
-          <li><strong>Owner</strong> -- full control, including sign-in methods (GitHub, Google, SMTP) and inviting Owners/Admins.</li>
-          <li><strong>Admin</strong> -- full control over infrastructure, users and access grants.</li>
-          <li><strong>Member</strong> -- sees only what is explicitly granted.</li>
+          <li><strong>Owner</strong> — full control, including sign-in methods (GitHub, Google, SMTP) and inviting Owners/Admins.</li>
+          <li><strong>Admin</strong> — full control over infrastructure, users and access grants.</li>
+          <li><strong>Member</strong> — sees only what is explicitly granted.</li>
         </Ul>
         <P>
           Grants can be scoped to a Workspace, a single resource, a Monitoring/Logs folder, or a single dashboard. Monitoring and Logs are
@@ -217,7 +217,7 @@ npm run dev                         # http://localhost:3000`}</Code>
           <li>SSH credentials and configuration secrets are encrypted with AES-256-GCM at rest.</li>
           <li>Agents authenticate with per-resource bearer tokens over outbound WebSockets.</li>
           <li>The audit trail records logins, role changes, grants, config edits and operations; console sessions and log streams are logged as open/close events, never their content.</li>
-          <li>Database remediation is Admin-only and limited to backend-templated operations -- no free-form SQL.</li>
+          <li>Database remediation is Admin-only and limited to backend-templated operations — no free-form SQL.</li>
         </Ul>
 
         <H2 id="plans">Plans &amp; limits</H2>
@@ -232,7 +232,7 @@ npm run dev                         # http://localhost:3000`}</Code>
         <P>
           {PRODUCT_NAME} follows semantic versioning (<C>MAJOR.MINOR.PATCH</C>). The running version is shown at the bottom-left of the
           console sidebar and on the Plans &amp; Billing page. The current stable release is <strong>v{PRODUCT_VERSION}</strong>. Installed agents
-          don&apos;t auto-update -- reinstall an agent with a freshly generated command to pick up a new agent version.
+          don&apos;t auto-update — reinstall an agent with a freshly generated command to pick up a new agent version.
         </P>
       </article>
     </div>

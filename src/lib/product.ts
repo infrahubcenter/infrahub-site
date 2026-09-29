@@ -5,7 +5,7 @@
 export const PRODUCT_NAME = "Infra Hub Center";
 export const PRODUCT_TAGLINE = "The one-stop operations platform for DevOps engineers";
 export const PRODUCT_DESCRIPTION =
-  "Monitoring, log management, patching and access control for VMs, Docker, Kubernetes, databases and object storage -- self-hosted, in one console.";
+  "Monitoring, log management, patching and access control for VMs, Docker, Kubernetes, databases and object storage — self-hosted, in one console.";
 
 export const PRODUCT_VERSION = "1.0.0";
 export const RELEASE_CHANNEL = "Stable";
@@ -35,7 +35,7 @@ export const FEATURES: Feature[] = [
   {
     icon: "FileText",
     title: "Log Management",
-    body: "Stream container, pod and systemd journal logs in real time -- colorized and badged by severity.",
+    body: "Stream container, pod and systemd journal logs in real time — colorized and badged by severity.",
     points: ["Docker & Kubernetes Log Explorer", "VM journal logs via the VM Agent", "Full-screen, resizable, reconnect-safe"],
   },
   {
@@ -85,12 +85,12 @@ export const DEVOPS_BENEFITS = [
   {
     icon: "Zap",
     title: "Minutes to first dashboard",
-    body: "Agents connect out over a WebSocket -- no inbound ports, no exporters to wire up. Copy one docker run or kubectl apply command and data starts flowing.",
+    body: "Agents connect out over a WebSocket — no inbound ports, no exporters to wire up. Copy one docker run or kubectl apply command and data starts flowing.",
   },
   {
     icon: "Search",
     title: "Metrics and logs side by side",
-    body: "When a container spikes, the logs for that exact container are one click away -- no context switch, no query language to remember during an incident.",
+    body: "When a container spikes, the logs for that exact container are one click away — no context switch, no query language to remember during an incident.",
   },
   {
     icon: "Lock",
@@ -222,7 +222,7 @@ export const RELEASE_NOTES: { version: string; date: string; items: string[] }[]
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Is Infra Hub Center SaaS or self-hosted?",
-    a: "Self-hosted. It runs as a Go API, a Next.js console and PostgreSQL -- via Docker Compose or your own orchestration. Your metrics, logs and credentials never leave your network.",
+    a: "Self-hosted. It runs as a Go API, a Next.js console and PostgreSQL — via Docker Compose or your own orchestration. Your metrics, logs and credentials never leave your network.",
   },
   {
     q: "Do I need to open inbound ports on monitored hosts?",
@@ -238,7 +238,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Can I give developers access without giving them admin?",
-    a: "Yes. Members only see what is explicitly granted -- a Workspace, a single resource, or read-only Monitoring/Logs on specific folders or dashboards.",
+    a: "Yes. Members only see what is explicitly granted — a Workspace, a single resource, or read-only Monitoring/Logs on specific folders or dashboards.",
   },
   {
     q: "How do upgrades work?",

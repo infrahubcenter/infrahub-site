@@ -4,14 +4,14 @@ import { APP_URL, PRODUCT_NAME, PRODUCT_VERSION, RELEASE_CHANNEL, RELEASE_DATE }
 export function SiteFooter() {
   return (
     <footer className="border-t border-slate-200 dark:border-slate-800">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+      <div className="page-container grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element -- static SVG mark */}
+            {/* eslint-disable-next-line @next/next/no-img-element — static SVG mark */}
             <img src="/logo-icon.svg" alt="" className="h-7 w-7" />
             <span className="font-semibold">{PRODUCT_NAME}</span>
           </div>
-          <p className="mt-3 text-sm text-slate-500">Monitoring, logging and operations for DevOps teams -- in one self-hosted console.</p>
+          <p className="mt-3 text-sm text-slate-500">Monitoring, logging and operations for DevOps teams — in one self-hosted console.</p>
         </div>
         <FooterCol
           title="Product"
@@ -42,7 +42,7 @@ export function SiteFooter() {
         />
       </div>
       <div className="border-t border-slate-200 dark:border-slate-800">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs text-slate-400 sm:px-6 dark:text-slate-600">
+        <div className="page-container flex flex-wrap items-center justify-between gap-2 py-5 text-xs text-slate-400 dark:text-slate-600">
           <span>© 2026 Infra Hub Center. All rights reserved.</span>
           <span>
             v{PRODUCT_VERSION} · {RELEASE_CHANNEL} · {RELEASE_DATE}
