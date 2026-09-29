@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Boxes, Container, Network, Server, ShieldCheck } from "lucide-react";
+import { Boxes, Container, Database, Layers, Network, Server, ShieldCheck } from "lucide-react";
 import { CodeBlock } from "@/components/code-block";
 import { Tabs } from "@/components/tabs";
 import { VersionBadge } from "@/components/version-badge";
@@ -8,7 +8,9 @@ import {
   AGENT_K8S,
   AGENT_VM_DOCKER,
   AGENT_VM_NATIVE,
+  COMPONENTS,
   COMPOSE_STEPS,
+  DB_OPTIONS,
   DOCKER_ENGINE,
   DOCKER_POSTINSTALL,
   HOST_COMMON,
@@ -54,6 +56,26 @@ function DistroTabs({ distros }: { distros: Distro[] }) {
   );
 }
 
+function DbTabs({ mode }: { mode: "compose" | "k8s" }) {
+  return (
+    <div className="mt-4">
+      <Tabs
+        tabs={DB_OPTIONS.map((o) => ({
+          id: o.id,
+          label: o.label,
+          hint: o.hint,
+          content: (
+            <>
+              <p className="text-sm leading-6 text-slate-500">{o.body}</p>
+              <CodeBlock code={mode === "compose" ? o.compose : o.k8s} title={mode === "compose" ? ".env" : "secret keys"} />
+            </>
+          ),
+        }))}
+      />
+    </div>
+  );
+}
+
 function SectionTitle({ id, icon: Icon, title, subtitle }: { id: string; icon: typeof Server; title: string; subtitle: string }) {
   return (
     <div id={id} className="scroll-mt-24 border-b border-slate-200 pb-4 dark:border-slate-800">
@@ -69,6 +91,7 @@ function SectionTitle({ id, icon: Icon, title, subtitle }: { id: string; icon: t
 const METHODS = [
   { href: "#docker", icon: Container, title: "Docker Compose", body: "Recommended. Pulls the published images -- one compose file, running in minutes.", tag: "Recommended" },
   { href: "#kubernetes", icon: Network, title: "Kubernetes", body: "PostgreSQL, API, console and gateway as Kubernetes workloads from the same images.", tag: "Clusters" },
+  { href: "#containers", icon: Layers, title: "Individual containers", body: "Run the API, console and gateway images yourself -- any orchestrator, your own or a managed PostgreSQL.", tag: "Production" },
   { href: "#host", icon: Server, title: "Linux host (systemd)", body: "Native install without Docker: apt, dnf or yum, managed by systemd behind nginx.", tag: "Bare metal / VM" },
   { href: "#agents", icon: Boxes, title: "Agents", body: "Connect Docker hosts, VMs (Docker or native) and Kubernetes clusters to your platform.", tag: "Monitored hosts" },
 ];
@@ -82,7 +105,7 @@ export default function InstallPage() {
         Self-host v{PRODUCT_VERSION} in containers or directly on a Linux server, then connect the machines and clusters you want to monitor.
       </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {METHODS.map((m) => (
           <a key={m.href} href={m.href} className="group rounded-2xl border border-slate-200 p-5 transition-colors hover:border-sky-400 dark:border-slate-800 dark:hover:border-sky-700">
             <div className="flex items-center justify-between">
@@ -144,7 +167,7 @@ export default function InstallPage() {
           </Step>
           {COMPOSE_STEPS.map((s, i) => (
             <Step key={s.title} n={i + 2} title={s.title} body={s.body}>
-              <CodeBlock code={s.code} title={s.file ?? "shell"} />
+              {s.db ? <DbTabs mode="compose" /> : <CodeBlock code={s.code} title={s.file ?? "shell"} />}
             </Step>
           ))}
         </ol>
@@ -165,10 +188,59 @@ export default function InstallPage() {
         <ol className="mt-8 space-y-10">
           {K8S_STEPS.map((s, i) => (
             <Step key={s.title} n={i + 1} title={s.title} body={s.body}>
-              <CodeBlock code={s.code} title={s.file ?? "shell"} />
+              {s.db ? <DbTabs mode="k8s" /> : <CodeBlock code={s.code} title={s.file ?? "shell"} />}
             </Step>
           ))}
         </ol>
+      </section>
+
+      {/* ---------------- Individual containers ---------------- */}
+      <section className="mt-20">
+        <SectionTitle
+          id="containers"
+          icon={Layers}
+          title="Method 3 · Individual containers"
+          subtitle="Each service is its own image -- deploy them on ECS, Nomad, Swarm or plain Docker, and point the API at the PostgreSQL you already run."
+        />
+        <div className="mt-8 space-y-8">
+          {COMPONENTS.map((c) => (
+            <div key={c.name} className="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
+              <div className="flex flex-wrap items-center gap-2">
+                {c.name === "postgres" ? <Database className="h-5 w-5 text-sky-600 dark:text-sky-400" /> : <Container className="h-5 w-5 text-sky-600 dark:text-sky-400" />}
+                <h3 className="font-semibold">{c.name}</h3>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800">port {c.port}</span>
+                {c.optional && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-800 dark:bg-amber-950 dark:text-amber-300">optional</span>}
+              </div>
+              <p className="mt-2 text-sm text-slate-500">{c.role}</p>
+              <CodeBlock code={c.image} title="image" />
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-xs text-slate-500">
+                    <tr>
+                      <th className="py-1 pr-4 font-medium">Variable</th>
+                      <th className="py-1 pr-4 font-medium">Required</th>
+                      <th className="py-1 font-medium">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-600 dark:text-slate-300">
+                    {c.env.map((e) => (
+                      <tr key={e.key} className="border-t border-slate-100 dark:border-slate-800">
+                        <td className="py-1.5 pr-4 font-mono text-xs">{e.key}</td>
+                        <td className="py-1.5 pr-4 text-xs">{e.required ? "yes" : "no"}</td>
+                        <td className="py-1.5 text-xs">{e.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <CodeBlock code={c.run} title="docker run" />
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 text-sm text-slate-500">
+          Start order: database (if built-in) → infrahub-api → infrahub-ui → infrahub-gateway. Only the gateway needs a published port; keep the API,
+          console and database on a private network.
+        </p>
       </section>
 
       {/* ---------------- Host ---------------- */}
@@ -176,7 +248,7 @@ export default function InstallPage() {
         <SectionTitle
           id="host"
           icon={Server}
-          title="Method 3 · Linux host (systemd)"
+          title="Method 4 · Linux host (systemd)"
           subtitle="No Docker. PostgreSQL, the Go API and the Node.js console run as native services behind nginx."
         />
         <ol className="mt-8 space-y-10">

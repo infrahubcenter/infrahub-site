@@ -21,6 +21,6 @@ defaults to the local dev-proxy at http://localhost:4000.
 All copy lives in `src/lib/product.ts`; install commands in
 `src/lib/install.ts` (keep them in step with the Dockerfiles, compose file
 and `infrahub-agents/infrahub-vm-agent/install.sh`). Replace `REPO_URL`
-there with your real repository URL, and `SALES_EMAIL` in product.ts. The version (`PRODUCT_VERSION`) and
+there with your real repository URL, and `SALES_EMAIL` (infrahubcenter@gmail.com) in product.ts. The version (`PRODUCT_VERSION`) and
 plans (`PLANS`) mirror `infrahub-ui/src/lib/branding.ts` and
 `infrahub-ui/src/lib/plans.ts` -- update both on each release or price change.

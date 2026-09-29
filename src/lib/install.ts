@@ -134,8 +134,36 @@ sudo usermod -aG docker $USER
 
 docker version && docker compose version`;
 
+// --- Database choice (shared by every method) ---
+export const DB_OPTIONS: { id: string; label: string; hint: string; body: string; compose: string; k8s: string }[] = [
+  {
+    id: "builtin",
+    label: "Built-in PostgreSQL",
+    hint: "container / StatefulSet",
+    body: "PostgreSQL 16 runs next to the platform with a persistent volume. Simplest; you handle its backups (pg_dump).",
+    compose: `# .env
+COMPOSE_PROFILES=postgres
+POSTGRES_PASSWORD=$(openssl rand -hex 24)     # generated in the step above`,
+    k8s: `# secret keys: postgres-password + database-url pointing at the built-in service
+PGPW=$(openssl rand -hex 24)
+--from-literal=postgres-password="$PGPW" \\
+--from-literal=database-url="postgres://infrahub:$PGPW@infrahub-postgres:5432/infrahub?sslmode=disable"
+# and apply postgres.yaml as well`,
+  },
+  {
+    id: "managed",
+    label: "Managed PostgreSQL",
+    hint: "RDS · Cloud SQL · Azure",
+    body: "Use AWS RDS / Aurora, Google Cloud SQL, Azure Database for PostgreSQL or your own server (PostgreSQL 14+). Create an empty database and a user that owns it; the API creates every table on first start. URL-encode special characters in the password.",
+    compose: `# .env -- delete the COMPOSE_PROFILES=postgres line, then:
+DATABASE_URL=postgres://infrahub:<password>@mydb.xxxx.us-east-1.rds.amazonaws.com:5432/infrahub?sslmode=require`,
+    k8s: `# secret key: database-url only (skip postgres.yaml)
+--from-literal=database-url='postgres://infrahub:<password>@mydb.xxxx.us-east-1.rds.amazonaws.com:5432/infrahub?sslmode=require'`,
+  },
+];
+
 // --- Platform via Docker Compose (published images, nothing built) ---
-export const COMPOSE_STEPS: { title: string; body?: string; code: string; file?: string }[] = [
+export const COMPOSE_STEPS: { title: string; body?: string; code: string; file?: string; db?: boolean }[] = [
   {
     title: "Download the compose file and settings template",
     code: `mkdir -p ~/infrahub && cd ~/infrahub
@@ -144,24 +172,27 @@ curl -fsSL ${DEPLOY_RAW}/docker/.env.example -o .env`,
   },
   {
     title: "Generate secrets and set your address",
-    body: "PUBLIC_URL must be the address browsers and agents use to reach this server -- its IP or domain, not localhost. The admin password needs at least 12 characters.",
+    body: "PUBLIC_URL must be the address browsers and agents use to reach this server -- its IP or domain, not localhost.",
     code: `sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 24)|" .env
 sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$(openssl rand -hex 48)|" .env
 sed -i "s|^SSH_CREDENTIAL_ENCRYPTION_KEY=.*|SSH_CREDENTIAL_ENCRYPTION_KEY=$(openssl rand -base64 32)|" .env
-sed -i "s|^PUBLIC_URL=.*|PUBLIC_URL=http://$(hostname -I | awk '{print $1}')|" .env
-
-# Then set BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD (and INFRAHUB_PLAN):
-nano .env
-chmod 600 .env`,
+sed -i "s|^PUBLIC_URL=.*|PUBLIC_URL=http://$(hostname -I | awk '{print $1}')|" .env`,
   },
   {
-    title: "Start the platform",
-    body: "On first start the API migrates and seeds the database and creates your admin account automatically.",
-    code: `docker compose up -d
-docker compose ps
+    title: "Choose the database",
+    body: "Built-in PostgreSQL is enabled by default. For a managed database, switch .env as shown.",
+    code: "",
+    db: true,
+  },
+  {
+    title: "Set the first admin and start",
+    body: "On first start the API migrates and seeds the database and creates your admin account (password: 12+ characters).",
+    code: `nano .env          # BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PASSWORD, INFRAHUB_PLAN
+chmod 600 .env
 
-curl -s http://localhost/api/health      # {"status":"ok","database":"ok"}
-# Open PUBLIC_URL in a browser and sign in with BOOTSTRAP_ADMIN_EMAIL / _PASSWORD.`,
+docker compose up -d
+docker compose ps
+curl -s http://localhost/api/health      # {"status":"ok","database":"ok"}`,
   },
   {
     title: "Upgrade later",
@@ -171,31 +202,123 @@ docker compose pull && docker compose up -d`,
 ];
 
 // --- Platform on Kubernetes ---
-export const K8S_STEPS: { title: string; body?: string; code: string; file?: string }[] = [
+export const K8S_STEPS: { title: string; body?: string; code: string; file?: string; db?: boolean }[] = [
+  {
+    title: "Choose the database",
+    body: "Decide first -- it determines the secret keys below.",
+    code: "",
+    db: true,
+  },
   {
     title: "Create the namespace and secrets",
+    body: "Managed database shown; for the built-in one use the two keys from the Built-in tab instead of database-url.",
     code: `kubectl create namespace infrahub
 kubectl -n infrahub create secret generic infrahub-secrets \\
-  --from-literal=postgres-password="$(openssl rand -hex 24)" \\
+  --from-literal=database-url='postgres://infrahub:<password>@<db-host>:5432/infrahub?sslmode=require' \\
   --from-literal=jwt-secret="$(openssl rand -hex 48)" \\
   --from-literal=ssh-credential-encryption-key="$(openssl rand -base64 32)" \\
   --from-literal=bootstrap-admin-password='<first-admin-password>'`,
   },
   {
     title: "Download and edit the manifest",
-    body: "Set PUBLIC_URL (the address of the gateway -- load balancer IP or domain) and BOOTSTRAP_ADMIN_EMAIL in the infrahub-config ConfigMap.",
+    body: "Set PUBLIC_URL (the gateway's load balancer IP or domain) and BOOTSTRAP_ADMIN_EMAIL in the infrahub-config ConfigMap.",
     code: `curl -fsSLO ${DEPLOY_RAW}/kubernetes/infrahub.yaml
 nano infrahub.yaml`,
   },
   {
     title: "Deploy",
-    body: "PostgreSQL (StatefulSet with a 10 Gi volume), API, console and gateway. The gateway Service is type LoadBalancer; use ingress.yaml instead if you run an Ingress controller.",
-    code: `kubectl apply -f infrahub.yaml
+    body: "API, console and gateway (plus PostgreSQL if built-in). The gateway Service is type LoadBalancer; use ingress.yaml instead if you run an Ingress controller.",
+    code: `# built-in database only:
+kubectl apply -f ${DEPLOY_RAW}/kubernetes/postgres.yaml
+
+kubectl apply -f infrahub.yaml
 kubectl -n infrahub rollout status deploy/infrahub-api --timeout=5m
 kubectl -n infrahub get svc infrahub-gateway     # EXTERNAL-IP = your PUBLIC_URL host
 
 # Optional Ingress (ingress-nginx + your domain):
 curl -fsSLO ${DEPLOY_RAW}/kubernetes/ingress.yaml`,
+  },
+];
+
+// --- Individual containers: each image on its own ---
+export type Component = {
+  image: string;
+  name: string;
+  port: string;
+  role: string;
+  optional?: boolean;
+  env: { key: string; required: boolean; desc: string }[];
+  run: string;
+};
+
+export const COMPONENTS: Component[] = [
+  {
+    image: `docker.io/infrahubcenter/infrahub-api:${VERSION}`,
+    name: "infrahub-api",
+    port: "8080",
+    role: "Go API: REST + WebSockets, schedulers. Runs migrations, seed and first-admin creation on start.",
+    env: [
+      { key: "DATABASE_URL", required: true, desc: "PostgreSQL 14+ connection string (managed or built-in)" },
+      { key: "JWT_SECRET", required: true, desc: "Random secret, e.g. openssl rand -hex 48" },
+      { key: "SSH_CREDENTIAL_ENCRYPTION_KEY", required: true, desc: "32 bytes, base64: openssl rand -base64 32" },
+      { key: "PUBLIC_URL", required: true, desc: "Public address of the gateway -- also used in agent install commands" },
+      { key: "BOOTSTRAP_ADMIN_EMAIL / _NAME / _PASSWORD", required: false, desc: "First admin, created once" },
+      { key: "COOKIE_SECURE", required: false, desc: "true when served over https (default true)" },
+      { key: "INFRAHUB_AUTO_MIGRATE", required: false, desc: "true (default) runs migrations + seed on start" },
+      { key: "INFRAHUB_CONFIG_DIR", required: false, desc: "Set to a folder without a config file for env-only config" },
+    ],
+    run: `docker network create infrahub
+
+docker run -d --name infrahub-api --network infrahub --restart unless-stopped \\
+  -e INFRAHUB_CONFIG_DIR=/etc/infrahub \\
+  -e DATABASE_URL='postgres://infrahub:<password>@<db-host>:5432/infrahub?sslmode=require' \\
+  -e JWT_SECRET="$(openssl rand -hex 48)" \\
+  -e SSH_CREDENTIAL_ENCRYPTION_KEY="$(openssl rand -base64 32)" \\
+  -e PUBLIC_URL=http://<your-server> -e COOKIE_SECURE=false \\
+  -e BOOTSTRAP_ADMIN_EMAIL=admin@example.com -e BOOTSTRAP_ADMIN_PASSWORD='<12+ chars>' \\
+  docker.io/infrahubcenter/infrahub-api:${VERSION}`,
+  },
+  {
+    image: `docker.io/infrahubcenter/infrahub-ui:${VERSION}`,
+    name: "infrahub-ui",
+    port: "3000",
+    role: "Web console (Next.js). Calls /api on its own origin -- serve it behind the gateway.",
+    env: [
+      { key: "INFRAHUB_PLAN", required: false, desc: "community | team | business | enterprise (default community)" },
+      { key: "INFRAHUB_MARKETING_URL", required: false, desc: "Link target for Compare plans / Upgrade" },
+    ],
+    run: `docker run -d --name infrahub-ui --network infrahub --restart unless-stopped \\
+  -e INFRAHUB_PLAN=community \\
+  docker.io/infrahubcenter/infrahub-ui:${VERSION}`,
+  },
+  {
+    image: `docker.io/infrahubcenter/infrahub-gateway:${VERSION}`,
+    name: "infrahub-gateway",
+    port: "80",
+    role: "nginx entry point: /api/* (incl. WebSockets) to the API, everything else to the console.",
+    env: [
+      { key: "INFRAHUB_API_UPSTREAM", required: false, desc: "host:port of the API (default infrahub-api:8080)" },
+      { key: "INFRAHUB_UI_UPSTREAM", required: false, desc: "host:port of the console (default infrahub-ui:3000)" },
+      { key: "INFRAHUB_MAX_BODY_SIZE", required: false, desc: "Upload limit (default 50m)" },
+    ],
+    run: `docker run -d --name infrahub-gateway --network infrahub --restart unless-stopped \\
+  -p 80:80 \\
+  docker.io/infrahubcenter/infrahub-gateway:${VERSION}`,
+  },
+  {
+    image: "docker.io/library/postgres:16-alpine",
+    name: "postgres",
+    port: "5432",
+    role: "Optional built-in database. Skip it when DATABASE_URL points at a managed PostgreSQL.",
+    optional: true,
+    env: [
+      { key: "POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD", required: true, desc: "Database, owner and password" },
+    ],
+    run: `docker run -d --name infrahub-postgres --network infrahub --restart unless-stopped \\
+  -e POSTGRES_DB=infrahub -e POSTGRES_USER=infrahub -e POSTGRES_PASSWORD='<password>' \\
+  -v infrahub_postgres:/var/lib/postgresql/data \\
+  postgres:16-alpine
+# then: DATABASE_URL=postgres://infrahub:<password>@infrahub-postgres:5432/infrahub?sslmode=disable`,
   },
 ];
 
@@ -274,6 +397,7 @@ go version`,
   },
   {
     title: "Create the service user, database and get the source",
+    body: "Using a managed PostgreSQL (RDS, Cloud SQL, Azure)? Skip the two psql lines and the PostgreSQL packages in step 1, and use its connection string (sslmode=require) as DATABASE_URL in step 5.",
     code: `sudo useradd --system --create-home --home-dir /opt/infrahub --shell /usr/sbin/nologin infrahub
 sudo git clone ${GITHUB}/infrahub-api.git /opt/infrahub/src/infrahub-api
 sudo git clone ${GITHUB}/infrahub-ui.git  /opt/infrahub/src/infrahub-ui

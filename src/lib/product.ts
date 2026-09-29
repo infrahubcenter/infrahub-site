@@ -15,7 +15,7 @@ export const RELEASE_DATE = "September 2026";
 // console and API on one origin. Set NEXT_PUBLIC_APP_URL in production.
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:4000";
 
-export const SALES_EMAIL = "sales@enfec.com";
+export const SALES_EMAIL = "infrahubcenter@gmail.com";
 
 export type Feature = {
   icon: string;

@@ -43,7 +43,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-slate-200 dark:border-slate-800">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs text-slate-400 sm:px-6 dark:text-slate-600">
-          <span>© 2026 ENFEC LLC. All rights reserved.</span>
+          <span>© 2026 Infra Hub Center. All rights reserved.</span>
           <span>
             v{PRODUCT_VERSION} · {RELEASE_CHANNEL} · {RELEASE_DATE}
           </span>
