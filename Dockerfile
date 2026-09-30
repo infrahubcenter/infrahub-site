@@ -10,7 +10,8 @@ ARG NEXT_PUBLIC_APP_URL=http://localhost
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 RUN npm run build
 
-FROM nginx:1.27-alpine
+# alpine-slim: same nginx + template support (envsubst), ~20 MB instead of ~74 MB.
+FROM nginx:1.27-alpine-slim
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/out /usr/share/nginx/html
 EXPOSE 80
