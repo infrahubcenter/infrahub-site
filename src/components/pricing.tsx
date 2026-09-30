@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Check } from "lucide-react";
-import { LIMIT_LABELS, PLANS, type PlanLimits } from "@/lib/product";
+import { LIMIT_LABELS, PLANS, formatINR, type PlanLimits } from "@/lib/product";
 
 const LIMIT_KEYS = Object.keys(LIMIT_LABELS) as (keyof PlanLimits)[];
 
@@ -52,11 +52,11 @@ export function Pricing() {
               <p className="mt-1 min-h-10 text-sm text-slate-500">{plan.tagline}</p>
               <div className="mt-5 flex items-baseline gap-1">
                 <span className="text-4xl font-semibold tracking-tight">
-                  {price === null ? "Custom" : price === 0 ? "Free" : `$${price}`}
+                  {price === null ? "Custom" : price === 0 ? "Free" : formatINR(price)}
                 </span>
                 {price ? <span className="text-sm text-slate-500">/ month</span> : null}
               </div>
-              <p className="mt-1 h-4 text-xs text-slate-400">{price && annual ? "billed annually" : ""}</p>
+              <p className="mt-1 h-4 text-xs text-slate-400">{price ? (annual ? "billed annually, + GST" : "+ GST") : ""}</p>
 
               <Link
                 href={plan.priceMonthly === 0 ? "/install" : `/contact?plan=${plan.id}`}

@@ -6,7 +6,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 # Where "Sign in" links point -- baked in at build time.
-ARG NEXT_PUBLIC_APP_URL=http://localhost
+ARG NEXT_PUBLIC_APP_URL=https://infrahubcentre.vercel.app
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 RUN npm run build
 

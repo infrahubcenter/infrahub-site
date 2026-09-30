@@ -11,9 +11,9 @@ export const PRODUCT_VERSION = "1.0.0";
 export const RELEASE_CHANNEL = "Stable";
 export const RELEASE_DATE = "September 2026";
 
-// Local dev default is the dev proxy (dev-proxy.mjs), which serves the
-// console and API on one origin. Set NEXT_PUBLIC_APP_URL in production.
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:4000";
+// "Sign in" opens the public live demo (sample data, its own sign-up) --
+// override with NEXT_PUBLIC_APP_URL to point a build at a real console.
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://infrahubcentre.vercel.app";
 
 export const SALES_EMAIL = "infrahubcenter@gmail.com";
 
@@ -138,6 +138,7 @@ export type PlanLimits = {
 export type Plan = {
   id: string;
   name: string;
+  /** Monthly price in Indian rupees (INR), or null for "Contact sales". */
   priceMonthly: number | null;
   priceAnnual: number | null;
   tagline: string;
@@ -157,6 +158,11 @@ export const LIMIT_LABELS: Record<keyof PlanLimits, string> = {
   users: "Users",
 };
 
+// Prices are in Indian rupees, e.g. formatINR(3999) -> "₹3,999".
+export function formatINR(amount: number): string {
+  return `₹${amount.toLocaleString("en-IN")}`;
+}
+
 export const PLANS: Plan[] = [
   {
     id: "community",
@@ -164,16 +170,16 @@ export const PLANS: Plan[] = [
     priceMonthly: 0,
     priceAnnual: 0,
     tagline: "For individuals and small labs getting started.",
-    limits: { vms: 5, databases: 2, objectStorage: 1, dockerHosts: 2, k8sClusters: 1, users: 3 },
-    metricsRetentionDays: 7,
+    limits: { vms: 2, databases: 1, objectStorage: 1, dockerHosts: 1, k8sClusters: 1, users: 1 },
+    metricsRetentionDays: 3,
     logRetentionDays: 3,
     features: ["VM inventory & web SSH console", "Docker & Kubernetes monitoring", "Live log tailing", "Threshold alerts", "Community support"],
   },
   {
     id: "team",
     name: "Team",
-    priceMonthly: 49,
-    priceAnnual: 39,
+    priceMonthly: 3999,
+    priceAnnual: 3199,
     tagline: "For growing DevOps teams running production workloads.",
     limits: { vms: 25, databases: 10, objectStorage: 5, dockerHosts: 10, k8sClusters: 3, users: 15 },
     metricsRetentionDays: 30,
@@ -184,8 +190,8 @@ export const PLANS: Plan[] = [
   {
     id: "business",
     name: "Business",
-    priceMonthly: 199,
-    priceAnnual: 159,
+    priceMonthly: 15999,
+    priceAnnual: 12799,
     tagline: "For organizations standardizing on one ops platform.",
     limits: { vms: 100, databases: 50, objectStorage: 25, dockerHosts: 50, k8sClusters: 15, users: null },
     metricsRetentionDays: 90,
