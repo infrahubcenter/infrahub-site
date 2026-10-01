@@ -12,6 +12,26 @@ export const REPO_URL = `${GITHUB}/infrahub-deploy.git`;
 const RAW = "https://raw.githubusercontent.com/infrahubcenter";
 export const DEPLOY_RAW = `${RAW}/infrahub-deploy/main/deploy`;
 
+// --- Quick install: one command on any Linux server (deploy/install.sh in infrahub-deploy) ---
+export const QUICK_INSTALL_URL = `${DEPLOY_RAW}/install.sh`;
+export const QUICK_INSTALL = `curl -fsSL ${QUICK_INSTALL_URL} | sudo bash`;
+export const QUICK_INSTALL_UNATTENDED = `curl -fsSL ${QUICK_INSTALL_URL} | sudo bash -s -- --yes \\
+  --url https://infrahub.example.com \\
+  --admin-email you@example.com`;
+export const QUICK_INSTALL_OPTIONS: { flag: string; desc: string }[] = [
+  { flag: "--url URL", desc: "Address people and agents use (default: http://<server IP>)" },
+  { flag: "--admin-email EMAIL", desc: "First admin account (default: admin@<hostname>.local)" },
+  { flag: "--admin-password PASS", desc: "12+ characters (default: generated and shown at the end)" },
+  { flag: "--license KEY", desc: "License key for a paid plan (default: free Community)" },
+  { flag: "--database-url URL", desc: "Use your managed PostgreSQL instead of the built-in one" },
+  { flag: "--port PORT", desc: "Web console port (default 80)" },
+  { flag: "--yes", desc: "Ask nothing, use the options above and the defaults" },
+];
+export const QUICK_INSTALL_AFTER = `cd /opt/infrahub
+docker compose logs -f          # watch the logs
+docker compose down             # stop (your data is kept)
+curl -fsSL ${QUICK_INSTALL_URL} | sudo bash   # upgrade: run the installer again`;
+
 export const IMAGES: { name: string; role: string }[] = [
   { name: "infrahubcenter/infrahub-api", role: "Go API, schedulers, migrations (runs them on start)" },
   { name: "infrahubcenter/infrahub-ui", role: "Web console" },
@@ -187,7 +207,7 @@ sed -i "s|^PUBLIC_URL=.*|PUBLIC_URL=http://$(hostname -I | awk '{print $1}')|" .
   {
     title: "Set the first admin and start",
     body: "On first start the API migrates and seeds the database and creates your admin account (password: 12+ characters).",
-    code: `nano .env          # BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PASSWORD, INFRAHUB_PLAN
+    code: `nano .env          # BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PASSWORD (+ INFRAHUB_LICENSE_KEY for a paid plan)
 chmod 600 .env
 
 docker compose up -d
@@ -266,6 +286,7 @@ export const COMPONENTS: Component[] = [
       { key: "COOKIE_SECURE", required: false, desc: "true when served over https (default true)" },
       { key: "INFRAHUB_AUTO_MIGRATE", required: false, desc: "true (default) runs migrations + seed on start" },
       { key: "INFRAHUB_CONFIG_DIR", required: false, desc: "Set to a folder without a config file for env-only config" },
+      { key: "INFRAHUB_LICENSE_KEY", required: false, desc: "License key for a paid plan (empty = free Community plan)" },
     ],
     run: `docker network create infrahub
 
@@ -284,11 +305,9 @@ docker run -d --name infrahub-api --network infrahub --restart unless-stopped \\
     port: "3000",
     role: "Web console (Next.js). Calls /api on its own origin -- serve it behind the gateway.",
     env: [
-      { key: "INFRAHUB_PLAN", required: false, desc: "community | team | business | enterprise (default community)" },
       { key: "INFRAHUB_MARKETING_URL", required: false, desc: "Link target for Compare plans / Upgrade" },
     ],
     run: `docker run -d --name infrahub-ui --network infrahub --restart unless-stopped \\
-  -e INFRAHUB_PLAN=community \\
   docker.io/infrahubcenter/infrahub-ui:${VERSION}`,
   },
   {
@@ -482,7 +501,7 @@ After=network-online.target infrahub-api.service
 [Service]
 User=infrahub
 WorkingDirectory=/opt/infrahub/ui
-Environment=NODE_ENV=production PORT=3000 HOSTNAME=127.0.0.1 INFRAHUB_PLAN=community
+Environment=NODE_ENV=production PORT=3000 HOSTNAME=127.0.0.1
 ExecStart=/usr/bin/node /opt/infrahub/ui/server.js
 Restart=always
 NoNewPrivileges=true

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { VersionBadge } from "@/components/version-badge";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "@/lib/product";
+import { QUICK_INSTALL } from "@/lib/install";
 
 export const metadata: Metadata = {
   title: "Documentation",
@@ -77,13 +78,20 @@ export default function DocsPage() {
 
         <H2 id="quick-start">Quick start</H2>
         <P>
-          This is the local development setup. For production — Docker Compose, or a native install on Ubuntu/Debian (apt), RHEL/Rocky/Alma
-          (dnf) and more — see the{" "}
+          On any 64-bit Linux server with 4 GB RAM, run one command. It installs Docker if needed, asks for your address and admin
+          account, generates every secret and starts Infra Hub Center:
+        </P>
+        <Code>{QUICK_INSTALL}</Code>
+        <P>
+          Then open the address it prints and sign in. Run the same command again to upgrade. For Kubernetes, step-by-step Docker Compose,
+          individual containers or a native install without Docker, see the{" "}
           <a href="/install" className="text-sky-600 underline">
             installation guide
           </a>
           .
         </P>
+
+        <H3>Developer setup (to work on the code)</H3>
         <P>
           Requirements: <strong>Go 1.26+</strong>, <strong>Node.js 20+</strong> and <strong>Docker with Docker Compose</strong>.
         </P>
@@ -223,9 +231,9 @@ npm run dev                         # http://localhost:3000`}</Code>
         <H2 id="plans">Plans &amp; limits</H2>
         <P>
           Plans limit the number of registered Virtual Machines, Databases, Object Storage buckets, Docker Hosts, Kubernetes clusters and
-          users. Containers, pods, dashboards and log volume are not metered. The active plan is set per deployment with{" "}
-          <C>INFRAHUB_PLAN</C> (<C>community</C>, <C>team</C>, <C>business</C>, <C>enterprise</C>), and Admins can see usage
-          under <strong>Plans &amp; Billing</strong>. See <a href="/#pricing" className="text-sky-600 underline">pricing</a> for each plan&apos;s limits.
+          users, and how long metrics and logs are kept. Containers, pods, dashboards and log volume are not metered. Every installation runs
+          the free Community plan until a license key for Team, Business or Enterprise is set as <C>INFRAHUB_LICENSE_KEY</C> on the API. The API
+          enforces the limits itself, and Admins see the plan and usage under <strong>Plans &amp; Billing</strong>. See <a href="/#pricing" className="text-sky-600 underline">pricing</a> for each plan&apos;s limits.
         </P>
 
         <H2 id="versioning">Versioning</H2>
